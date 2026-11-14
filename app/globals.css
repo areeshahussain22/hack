@@ -90,6 +90,16 @@ body {
 .extra td { padding: 4px 6px; border-top: 1px solid var(--border); vertical-align: top; }
 .extra code { font-size: 0.82rem; overflow-wrap: anywhere; }
 .extra .num { text-align: right; white-space: nowrap; }
+.extra code { overflow-wrap: break-word; word-break: normal; }
+
+/* Phones / narrow panes: each calculation row becomes a small card (label, formula, amount) */
+@media (max-width: 560px) {
+  .msg { max-width: 100%; }
+  .extra table, .extra tbody, .extra tr, .extra td { display: block; width: 100%; }
+  .extra tr { border-top: 1px solid var(--border); padding: 6px 0; }
+  .extra td { border-top: 0; padding: 2px 0; }
+  .extra .num { text-align: left; font-weight: 600; }
+}
 
 .composer {
   position: sticky; bottom: 0; display: flex; gap: 8px;
