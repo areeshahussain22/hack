@@ -1,31 +1,205 @@
-# NovaCart Policy Knowledge Base
+# NovaCart Policy Assistant
 
 **Tech Fusion '26 · AI Hackathon · Challenge A: Policy Q&A Bot**
-Bahria University Islamabad · 14 November 2026 · Organised by the AI Club
 
-This repository holds the complete knowledge base for Challenge A. It contains the policy files of **NovaCart**, a fictional online store, and nothing else. The problem statement, the submission and the leaderboard are handled on the **ETL** platform.
+A customer-support bot for **NovaCart**, a fictional online store. It answers questions using **only** the 22 policy files in `policies/`, cites the exact section for every claim, and never does its own arithmetic: every refund, fee and total is calculated by code.
 
----
-## Repository layout
-```
-novacart-policy-bot/
-├── README.md        this file
-├── .gitignore       keeps secrets such as .env out of your repository
-└── policies/        the knowledge base: 22 policy files (00 to 21)
-```
-Your bot's code, your own tests and your own documents are added by your team in your own repository. The `policies/` folder is the only knowledge your bot may use.
+Customers can ask in **English, Urdu (اردو) or Roman Urdu** and get the reply in the same language. They can also **speak** the question and have the answer **read aloud**.
 
 ---
 
-## The policy files
+## What it does
 
-There are 22 Markdown files, named `NN_topic.md`. The number `NN` is part of each file's identity and is used when citing.
+- **Cited answers.** Every part of an answer links to the policy item it comes from, e.g. `01_returns_policy.md §2.1`, with the quoted text.
+- **Exact maths.** The AI writes the calculation steps; code runs them, rounding half up to whole rupees at each step (file 00 §1.3). The steps are shown to the customer.
+- **The right policy version.** Code picks which files are in force on the customer's contact date (e.g. the 2025 vs 2026 returns policy, the 2027 shipping fees) and which regional files override the general ones (Remote areas, International).
+- **Asks before guessing.** If the answer depends on a missing detail (contact date, city, item type…), it asks one short question.
+- **Says "not covered"** when the policy files don't answer something, instead of making things up.
+- **English, Urdu and Roman Urdu**, detected automatically. No language picker.
+- **Voice:** 🎤 speak the question (Chrome / Edge), 🔊 listen to the answer.
 
-**Start with file 00.** It explains the conventions the other files rely on: currency and tax, rounding, how days and months are counted, the regions and product categories, the order in which a checkout total is calculated, which version of a policy is in force on a given date, and what to do when two files do not agree. Treat file 00 as the single source of truth for these points.
+---
 
-### Coverage by topic
+## How it works
 
-| Topic area | Files |
+Each question goes through this pipeline (`lib/pipeline.js`):
+
+```
+question
+  → validate input (empty, junk, too long, wrong type)          code
+  → cache (same question = 0 AI calls)                           code
+  → extract facts  ‖  embed the question (run in parallel)       AI call 1 + embedding
+  → decide which policy files are in force                       code
+  → work out date facts (days, business days, full months)       code
+  → hybrid search: keywords (BM25) + meaning (embeddings)        code
+  → write the answer as JSON with citations and calc steps       AI call 2
+  → verify quotes and numbers, run the calculation               code
+  → one repair round only if a check failed                      AI call 3 (rare)
+  → translate the verified answer (Urdu / Roman Urdu only)       AI call (+1)
+  → answer
+```
+
+**English questions normally cost 2 AI calls; Urdu and Roman Urdu cost 3.** Cached questions and invalid input cost 0.
+
+### Safety checks (all in code, before the customer sees anything)
+
+| Check | What it stops |
+| --- | --- |
+| **Quote check** (`lib/verify.js`) | Each citation's quote must be copied word for word from that policy item. A made-up or reworded quote is dropped, and that part becomes "not covered". |
+| **Number check** (`lib/verify.js`) | Every number in an answer must appear in the items it cites, the customer's message or the code-computed date facts. Calculated amounts must be `{{placeholders}}` that code fills in. |
+| **Worked examples** | The policy files mark examples "(illustration only)". Their made-up prices can never confirm an amount in a real answer. |
+| **Unused calculation step** | A step that nothing uses (e.g. a return fee worked out but never subtracted) means a rule was left out, so a repair is triggered. |
+| **Last safety net** | A sentence with a number that is still unconfirmed after the repair is removed, never shown. |
+| **Date evidence** (`lib/extract.js`) | Every date the AI reads must come with the exact words it read it from, and those words must be in the customer's message. Relative dates ("yesterday", "last Tuesday") are counted by code, never by the AI. |
+| **Prompt injection** (`scripts/build-index.mjs`) | Lines in the policy files written as instructions to an AI are dropped when the files are indexed. |
+| **Translation check** (`lib/translate.js`) | A translated sentence is used only if it has exactly the same numbers as the English one. Otherwise that sentence stays in English. |
+
+### Languages
+
+- **Urdu script** is detected in code (`lib/lang.js`), which is exact. **Roman Urdu** is reported by the fact extractor, which already reads every question, so it costs nothing extra. A small word list is used only if the AI is down.
+- Reasoning, citations, quote and number checks all stay in **English**. Only the final, verified answer is translated, so translation can never change a rule or an amount.
+- Urdu digits (۰-۹), Urdu month names and Urdu place names (لاہور, سکردو, دبئی…) are understood.
+- The UI shows Urdu right to left in the Noto Nastaliq Urdu font, while amounts, dates, codes and citations stay left to right.
+
+### Models
+
+| Job | Model | Fallback |
+| --- | --- | --- |
+| Fact extraction | Groq `openai/gpt-oss-20b` | Gemini `gemini-2.5-flash-lite`, then regex |
+| Answer | Groq `openai/gpt-oss-120b` | Groq `openai/gpt-oss-20b`, then Gemini `gemini-2.5-flash-lite` |
+| Translation to Urdu / Roman Urdu | Gemini `gemini-2.5-flash-lite` | Groq `openai/gpt-oss-120b` |
+| Meaning search | Gemini `gemini-embedding-001` (256 dimensions) | keyword search only |
+| Voice input / read aloud | Browser Web Speech API | mic hidden if unsupported |
+
+`lib/llm.js` retries rate limits and server errors with backoff, follows `Retry-After`, and pauses a rate-limited model for 60 seconds (circuit breaker) so customers don't wait on retries that won't work. If every model fails, the bot shows the policy rules most related to the question instead of an error.
+
+---
+
+## Run it locally
+
+Needs **Node.js 22** or newer.
+
+```bash
+npm install
+cp .env.example .env.local     # then put your keys in .env.local
+npm run dev
+```
+
+Open http://localhost:3000.
+
+The first `npm run dev` embeds all 270 policy items (about 3 minutes on Gemini's free tier). After that the saved vectors in `lib/policy-embeddings.js` are reused until a policy file changes.
+
+### Environment variables
+
+| Variable | Required | Default |
+| --- | --- | --- |
+| `GROQ_API_KEY` | yes | |
+| `GEMINI_API_KEY` | yes (fallback, translation, meaning search) | |
+| `GROQ_FAST_MODEL` | no | `openai/gpt-oss-20b` |
+| `GROQ_MAIN_MODEL` | no | `openai/gpt-oss-120b` |
+| `GEMINI_MODEL` | no | `gemini-2.5-flash-lite` |
+| `GEMINI_EMBED_MODEL` | no | `gemini-embedding-001` |
+
+Keys go in `.env.local`, which is in `.gitignore` and never committed.
+
+### Tests
+
+```bash
+npm test
+```
+
+40 offline tests (no API keys needed): date rules, the calculator, policy versions and regions, search, fact extraction, the quote and number checks, and Urdu support.
+
+```bash
+npm run build
+```
+
+---
+
+## API
+
+### `POST /api/ask`
+
+```json
+{ "question": "Today is 2026-07-01. Can I return opened headphones delivered 2026-06-27 in Lahore?",
+  "history": [{ "role": "user", "text": "..." }, { "role": "bot", "text": "..." }] }
+```
+
+`history` is optional (earlier turns, so the bot can use the answer to its clarifying question).
+
+Every response has `status` and a plain-text `answer` with the sources inline:
+
+| `status` | Meaning |
+| --- | --- |
+| `answer` | Answered. Also has `parts` (with `citations`), `calculation`, `rules`, `version_note` |
+| `clarify` | One question back to the customer, in `question` |
+| `not_covered` | The policy files don't cover it |
+| `fallback` | The AI was unavailable; `sources` has the most related policy rules |
+| `error` | Invalid input (HTTP 400) |
+
+Other fields: `language` (`en` / `ur` / `roman_ur`), `answer_en` (the English original), `translation_note`, and `meta` (`ai_calls`, `tokens`, `providers`, `ms`, `cached`, `semantic_search`).
+
+### `GET /api/health`
+
+Number of policy files and items, whether meaning search is on, and which providers are configured or paused.
+
+---
+
+## Deploy on Vercel
+
+1. Import the GitHub repository in Vercel.
+2. Add `GROQ_API_KEY` and `GEMINI_API_KEY` under **Settings → Environment Variables**.
+3. Deploy. The build indexes the policy files and reuses the committed vectors.
+
+---
+
+## Project layout
+
+```
+app/
+  page.js              chat UI: RTL Urdu, mic, read aloud
+  layout.js            Urdu font
+  api/ask/route.js     POST /api/ask
+  api/health/route.js  GET /api/health
+lib/
+  pipeline.js          the full answer pipeline
+  extract.js           AI call 1: facts from the message, with date evidence
+  resolver.js          which policy files are in force (dates, versions, regions)
+  dates.js             day, business-day and full-month counting (file 00 §1.5–1.7)
+  retrieve.js          hybrid search, topic sections and cross-references
+  embeddings.js        meaning search
+  prompt.js            AI call 2: answer prompt
+  verify.js            quote and number checks
+  calc.js              exact whole-rupee calculator
+  llm.js               Groq / Gemini router, retries, circuit breaker
+  lang.js              language detection, Urdu digits, months and places
+  translate.js         translation with the number check
+  validate.js          input checks
+  cache.js             in-memory answer cache
+scripts/
+  build-index.mjs      policy files -> citable items (runs before dev / build / test)
+  build-embeddings.mjs policy items -> meaning vectors
+tests/
+  offline.test.mjs
+policies/              the knowledge base (not edited)
+```
+
+---
+
+## Known limits
+
+- **Free-tier rate limits.** Groq's free tier allows about one `gpt-oss-120b` answer per minute. When questions come fast, the smaller fallback models answer. The checks keep wrong numbers out, but those answers can be less complete.
+- **The cache is in memory**, so it is lost when the server restarts. A real shop would use a shared store such as Redis.
+- **Voice input** works in Chrome and Edge only. Chrome sends the audio to Google's speech service to turn it into text.
+- **Read aloud in Urdu** needs an Urdu (or Hindi) voice installed on the device. Without one, the default voice is used.
+
+---
+
+## Knowledge base
+
+The `policies/` folder holds the 22 NovaCart policy files and is the only knowledge the bot uses. The files are not edited. **File 00** explains the conventions the others rely on: currency and tax, rounding, how days and months are counted, regions and categories, calculation order, which version is in force, and what to do when files disagree.
+
+| Topic | Files |
 | --- | --- |
 | How the policies fit together | 00 |
 | Returns and refunds | 01, 02, 03, 04 |
@@ -37,108 +211,7 @@ There are 22 Markdown files, named `NN_topic.md`. The number `NN` is part of eac
 | Rules for sellers | 17, 18 |
 | Special rules for some regions | 19, 20 |
 
-### File index
-
-| # | File | What it covers |
-| --- | --- | --- |
-| 00 | `00_how_policies_work_together.md` | Conventions, regions, categories, versions, precedence, calculation order |
-| 01 | `01_returns_policy.md` | Returns policy, version 3: windows, conditions, return fees, refund amount |
-| 02 | `02_returns_policy_2025.md` | Returns policy, version 2 (2025 edition) |
-| 03 | `03_refunds_policy.md` | Which fees are refunded, refund methods and timing, cancellations |
-| 04 | `04_non_returnable_items.md` | Items that cannot be returned, and the exceptions |
-| 05 | `05_shipping_policy.md` | Dispatch, delivery times, express and bulky delivery, failed deliveries |
-| 06 | `06_shipping_fees_and_free_shipping.md` | Shipping fees, free-shipping thresholds, surcharges |
-| 07 | `07_lost_or_damaged_deliveries.md` | Damaged, wrong, defective and lost deliveries |
-| 08 | `08_warranty_policy.md` | Warranty periods, coverage, remedies |
-| 09 | `09_warranty_claims.md` | How to claim, costs, repair time, appeals |
-| 10 | `10_payments.md` | Payment methods, security, order limits |
-| 11 | `11_cod_and_failed_payments.md` | Cash on delivery, COD fee, failed payments |
-| 12 | `12_promo_code_rules.md` | Promo codes, eligibility, discount calculation, splitting a discount |
-| 13 | `13_sales_and_bundles.md` | Sale prices, flash sales, Final Sale, bundle deals |
-| 14 | `14_store_credit.md` | Store credit, bonus, expiry, mixed payments |
-| 15 | `15_privacy_policy.md` | Data collected, use, sharing, cookies, security |
-| 16 | `16_data_requests_and_retention.md` | Data requests, deletion, retention periods |
-| 17 | `17_seller_marketplace_rules.md` | Seller eligibility, commission, payout, dispatch |
-| 18 | `18_seller_return_obligations.md` | Marketplace returns, seller warranty, penalties |
-| 19 | `19_remote_areas_addendum.md` | Fees, delivery, returns and warranty for Remote areas |
-| 20 | `20_international_addendum.md` | Pricing, fees, returns and warranty for international orders |
-| 21 | `21_shipping_fee_update_2027.md` | Shipping fee update announced for 2027 |
-
----
-
-## File format
-
-### Front matter
-
-Every file starts with a block of metadata between two `---` lines:
-
-```yaml
----
-doc_id: NC-POL-06
-title: Shipping Fees and Free Shipping
-version: 2.0
-effective_date: 2026-01-15
-last_updated: 2026-01-05
-scope: general
----
-```
-
-| Field | Meaning |
-| --- | --- |
-| `doc_id` | `NC-POL-` followed by the file number |
-| `title` | Human-readable title |
-| `version` | Version of that policy |
-| `effective_date` | The date from which the file is in force (`YYYY-MM-DD`) |
-| `last_updated` | The date the text was last edited |
-| `scope` | `general`, `specific` or `regional`, as used by the rules in file 00 |
-
-### Numbered sections
-
-Each file has numbered headings (`## 3. Refund method and timing`) and numbered items (`**3.2** ...`). Items are the unit your bot should cite. A good citation names the file and the item, for example:
-
-> `06_shipping_fees_and_free_shipping.md`, Section 2.2
-
-Some items contain tables. A table belongs to the item that introduces it.
-
-### Cross-references
-
-When a file points to another one, it uses the form `[file NN, Section X]`. All cross-references point to files and sections that exist.
-
----
-
-## Conventions at a glance
-
-These are explained in full in file 00.
-
-- Currency is PKR ("Rs."), in whole rupees. Listed prices include 18% GST.
-- Amounts that are not whole rupees are rounded half up when they are computed.
-- Dates are `YYYY-MM-DD`.
-- Every question your bot is tested on states its own dates. Do not use the system clock.
-
----
-
-## Ground rules for participants
-
-1. The files in `policies/` are the only knowledge base. Do not add outside knowledge about real stores, laws or products.
-2. Do not edit, rename or delete the policy files. Evaluation uses the original files, so changes in your copy will not be honoured.
-3. You are free to read, split, index, embed or otherwise process the files in any way you like.
-4. There are no sample questions or answers in this repository. Design your own tests.
-5. Submission, the problem statement and the leaderboard are on ETL.
-
----
-
-## Getting started
-
-Teams clone this repository at kickoff and push it to a fresh repository created at kickoff.
-
-```bash
-git clone <organizer-repo-url> novacart-policy-bot
-cd novacart-policy-bot
-git remote set-url origin <your-new-repo-url>
-git push -u origin main
-```
-
-Keep API keys in a `.env` file. It is already listed in `.gitignore`, so it will not be committed.
+Each file starts with front matter (`doc_id`, `title`, `version`, `effective_date`, `scope`) and has numbered items (`**3.2** ...`). Items are the unit the bot cites, e.g. `06_shipping_fees_and_free_shipping.md`, Section 2.2. Prices are in PKR, whole rupees, including 18% GST. Dates are `YYYY-MM-DD`, and the bot never uses the system clock: only dates stated by the customer count.
 
 ---
 
