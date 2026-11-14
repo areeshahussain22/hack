@@ -1,0 +1,423 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-14T00:00:00Z",
+  "title": "Design System: NovaBot",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Wayfinding Ink",
+        "canonical": "#161714",
+        "tonalRamp": [
+          "#0b0c0a",
+          "#161714",
+          "#2b2c28",
+          "#4f524c",
+          "#7a7d76",
+          "#a4a69f",
+          "#cfd0ca",
+          "#f0f0ec"
+        ]
+      },
+      "action": {
+        "role": "primary",
+        "displayName": "Terminal Yellow",
+        "canonical": "#ffc915",
+        "tonalRamp": [
+          "#4a3800",
+          "#7a5c00",
+          "#a87f00",
+          "#d4a200",
+          "#f2b800",
+          "#ffc915",
+          "#ffe07a",
+          "#fff4cc"
+        ]
+      },
+      "action-hover": {
+        "role": "primary",
+        "displayName": "Struck Yellow",
+        "canonical": "#f2b800",
+        "tonalRamp": [
+          "#4a3800",
+          "#7a5c00",
+          "#a87f00",
+          "#d4a200",
+          "#f2b800",
+          "#ffc915",
+          "#ffe07a",
+          "#fff4cc"
+        ]
+      },
+      "brick": {
+        "role": "secondary",
+        "displayName": "Brick",
+        "canonical": "#9a3324",
+        "tonalRamp": [
+          "#3a120c",
+          "#5e1e15",
+          "#7d291d",
+          "#9a3324",
+          "#bf5848",
+          "#d98a7e",
+          "#edbfb8",
+          "#f9e9e6"
+        ]
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Ground White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#161714",
+          "#4f524c",
+          "#9c9f98",
+          "#dcddd8",
+          "#e8e8e3",
+          "#f7f7f4",
+          "#fbfbf9",
+          "#ffffff"
+        ]
+      },
+      "page": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#f7f7f4",
+        "tonalRamp": [
+          "#161714",
+          "#4f524c",
+          "#9c9f98",
+          "#dcddd8",
+          "#e8e8e3",
+          "#f7f7f4",
+          "#fbfbf9",
+          "#ffffff"
+        ]
+      },
+      "pale": {
+        "role": "neutral",
+        "displayName": "Pale Stone",
+        "canonical": "#e8e8e3",
+        "tonalRamp": [
+          "#161714",
+          "#4f524c",
+          "#9c9f98",
+          "#dcddd8",
+          "#e8e8e3",
+          "#f7f7f4",
+          "#fbfbf9",
+          "#ffffff"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "#dcddd8",
+        "tonalRamp": [
+          "#161714",
+          "#4f524c",
+          "#9c9f98",
+          "#dcddd8",
+          "#e8e8e3",
+          "#f7f7f4",
+          "#fbfbf9",
+          "#ffffff"
+        ]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Rule",
+        "canonical": "#9c9f98",
+        "tonalRamp": [
+          "#161714",
+          "#4f524c",
+          "#9c9f98",
+          "#dcddd8",
+          "#e8e8e3",
+          "#f7f7f4",
+          "#fbfbf9",
+          "#ffffff"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "#4f524c",
+        "tonalRamp": [
+          "#161714",
+          "#2b2c28",
+          "#4f524c",
+          "#7a7d76",
+          "#9c9f98",
+          "#dcddd8",
+          "#e8e8e3",
+          "#f7f7f4"
+        ]
+      },
+      "on-ink": {
+        "role": "neutral",
+        "displayName": "On-Ink White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#161714",
+          "#4f524c",
+          "#9c9f98",
+          "#c9cbc4",
+          "#dcddd8",
+          "#e8e8e3",
+          "#f7f7f4",
+          "#ffffff"
+        ]
+      },
+      "on-ink-muted": {
+        "role": "neutral",
+        "displayName": "On-Ink Muted",
+        "canonical": "#c9cbc4",
+        "tonalRamp": [
+          "#161714",
+          "#4f524c",
+          "#9c9f98",
+          "#c9cbc4",
+          "#dcddd8",
+          "#e8e8e3",
+          "#f7f7f4",
+          "#ffffff"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Empty-state question prompt only; 1.375rem on phones."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Source panel heading."
+      },
+      "band": {
+        "displayName": "Band",
+        "purpose": "Sign band label and receipt total; 1.0625rem on phones."
+      },
+      "answer": {
+        "displayName": "Answer",
+        "purpose": "Main answer text, max 68ch; 1.125rem on phones."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Messages, hints, related rules; tabular numerals; 0.9375rem on phones."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Chip refs, disclosure summaries, step sources, status. Sentence case."
+      },
+      "urdu": {
+        "displayName": "Urdu (Nastaliq)",
+        "purpose": "Any Urdu run: 1.15x size, line height 2.1 to 2.2 (2 in the composer)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "focus-halo",
+        "value": "outline: 2px solid #161714; outline-offset: 2px; box-shadow: 0 0 0 4px #ffc915",
+        "purpose": "Focus-visible on every control."
+      },
+      {
+        "name": "band-outline-ink",
+        "value": "inset 0 0 0 2px #161714",
+        "purpose": "Limited and loading bands; keeps box size equal to filled bands."
+      },
+      {
+        "name": "band-outline-brick",
+        "value": "inset 0 0 0 2px #9a3324",
+        "purpose": "Error band."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The single easing curve for every transition and animation."
+      },
+      {
+        "name": "state",
+        "value": "120ms",
+        "purpose": "Hover and pressed colour changes on rows, chips, Send."
+      },
+      {
+        "name": "disclosure",
+        "value": "150ms",
+        "purpose": "Chevron rotation on details summaries."
+      },
+      {
+        "name": "band-wipe",
+        "value": "180ms clip-path inset(0 100% 0 0) to inset(0)",
+        "purpose": "Signature: band text wipes in like a sign update."
+      },
+      {
+        "name": "panel",
+        "value": "200ms translateX(100%) to none",
+        "purpose": "Source panel slide-in and column shift at 1280px+."
+      },
+      {
+        "name": "sheet",
+        "value": "240ms translateY(100%) to none",
+        "purpose": "Source sheet on phones."
+      },
+      {
+        "name": "progress",
+        "value": "1.4s infinite translateX(-100%) to translateX(340%)",
+        "purpose": "Loading sliver along the band's bottom edge; hidden under reduced motion."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all durations 0.01ms",
+        "purpose": "prefers-reduced-motion: everything changes instantly."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "max-width: 640px"
+      },
+      {
+        "name": "docked-panel",
+        "value": "min-width: 1280px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Sign Band",
+      "kind": "custom",
+      "refersTo": "band-answer",
+      "description": "Opens every bot reply; tone states the answer kind before it is read.",
+      "html": "<div class=\"ds-band ds-band-answer\"><span class=\"ds-band-pict\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M20 6 9 17l-5-5\"/></svg></span><span class=\"ds-band-text\">Answer<span class=\"ds-band-detail\"> · 3 sources · Rs. 10,200</span></span></div><div class=\"ds-band ds-band-clarify\"><span class=\"ds-band-pict\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01\"/></svg></span><span class=\"ds-band-text\">Your turn<span class=\"ds-band-detail\"> · one question</span></span></div><div class=\"ds-band ds-band-error\"><span class=\"ds-band-pict\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"/></svg></span><span class=\"ds-band-text\">Could not answer<span class=\"ds-band-detail\"> · try again</span></span></div>",
+      "css": ".ds-band { display: flex; align-items: center; gap: 12px; min-height: 56px; margin-bottom: 12px; padding: 8px 16px 8px 8px; border-radius: 2px; font-family: 'Source Sans 3', system-ui, sans-serif; font-size: 1.1875rem; line-height: 1.35; font-weight: 700; overflow: hidden; } .ds-band-pict { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: 2px; } .ds-band-text { flex: 1; animation: ds-band-in 180ms cubic-bezier(0.16, 1, 0.3, 1) both; } .ds-band-detail { font-weight: 500; } .ds-band-answer { background: #161714; color: #fff; } .ds-band-answer .ds-band-pict { background: #fff; color: #161714; } .ds-band-answer .ds-band-detail { color: #c9cbc4; } .ds-band-clarify { background: #ffc915; color: #161714; } .ds-band-clarify .ds-band-pict { background: #161714; color: #ffc915; } .ds-band-error { background: #fff; color: #9a3324; box-shadow: inset 0 0 0 2px #9a3324; } .ds-band-error .ds-band-pict { background: #9a3324; color: #fff; } @keyframes ds-band-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } } @media (prefers-reduced-motion: reduce) { .ds-band-text { animation: none; } }"
+    },
+    {
+      "name": "Send Button",
+      "kind": "button",
+      "refersTo": "button-send",
+      "description": "The one primary action; Terminal Yellow means your move.",
+      "html": "<button class=\"ds-send\">Send <svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button>",
+      "css": ".ds-send { height: 48px; display: inline-flex; align-items: center; gap: 8px; padding: 0 16px; background: #ffc915; color: #161714; border: 1px solid #161714; border-radius: 2px; font: 700 1rem 'Source Sans 3', system-ui, sans-serif; cursor: pointer; transition: background-color 120ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-send:hover { background: #f2b800; } .ds-send:active { transform: translateY(1px); } .ds-send:focus-visible { outline: 2px solid #161714; outline-offset: 2px; box-shadow: 0 0 0 4px #ffc915; }"
+    },
+    {
+      "name": "Icon Button",
+      "kind": "button",
+      "refersTo": "button-icon",
+      "description": "48px square utility control (mic); fills ink when on.",
+      "html": "<button class=\"ds-icon-btn\" aria-label=\"Speak\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/></svg></button>",
+      "css": ".ds-icon-btn { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 2px; border: 1px solid #9c9f98; background: #fff; color: #161714; cursor: pointer; } .ds-icon-btn:hover { border-color: #161714; } .ds-icon-btn[aria-pressed='true'] { background: #161714; color: #fff; border-color: #161714; } .ds-icon-btn:focus-visible { outline: 2px solid #161714; outline-offset: 2px; box-shadow: 0 0 0 4px #ffc915; }"
+    },
+    {
+      "name": "Source Chip",
+      "kind": "chip",
+      "refersTo": "chip-source",
+      "description": "File number and section in bold, then short title; opens the exact quote.",
+      "html": "<button class=\"ds-chip\"><b>01 §3.1</b><span class=\"ds-chip-title\">Returns policy</span></button> <button class=\"ds-chip\" aria-pressed=\"true\"><b>01 §5.2</b><span class=\"ds-chip-title\">Returns policy</span></button>",
+      "css": ".ds-chip { display: inline-flex; align-items: baseline; gap: 8px; min-height: 32px; padding: 4px 12px; border: 1px solid #9c9f98; border-radius: 2px; background: #fff; color: #161714; font: 400 0.8125rem/1.4 'Source Sans 3', system-ui, sans-serif; cursor: pointer; transition: border-color 120ms cubic-bezier(0.16, 1, 0.3, 1), background-color 120ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-chip b { font-weight: 700; } .ds-chip-title { color: #4f524c; } .ds-chip:hover { border-color: #161714; } .ds-chip:active { background: #e8e8e3; } .ds-chip[aria-pressed='true'] { background: #161714; border-color: #161714; color: #fff; } .ds-chip[aria-pressed='true'] .ds-chip-title { color: #c9cbc4; } .ds-chip:focus-visible { outline: 2px solid #161714; outline-offset: 2px; box-shadow: 0 0 0 4px #ffc915; }"
+    },
+    {
+      "name": "Composer Input",
+      "kind": "input",
+      "refersTo": "input-composer",
+      "description": "Auto-growing question field; switches to Nastaliq for Urdu.",
+      "html": "<textarea class=\"ds-input\" rows=\"1\" placeholder=\"Type your question…\"></textarea>",
+      "css": ".ds-input { width: 100%; min-height: 48px; resize: none; padding: 11px 12px; border: 1px solid #9c9f98; border-radius: 2px; background: #fff; color: #161714; font: 400 1rem/1.5 'Source Sans 3', system-ui, sans-serif; } .ds-input::placeholder { color: #4f524c; opacity: 1; } .ds-input:hover { border-color: #161714; } .ds-input:focus-visible { outline: 2px solid #161714; outline-offset: 2px; box-shadow: 0 0 0 4px #ffc915; }"
+    },
+    {
+      "name": "Voice Language Segmented Control",
+      "kind": "custom",
+      "refersTo": "segmented-option",
+      "description": "Joined EN / Urdu options in one ruled frame; pressed fills ink.",
+      "html": "<div class=\"ds-seg\" role=\"group\"><button aria-pressed=\"true\">EN</button><button lang=\"ur\" aria-pressed=\"false\">اردو</button></div>",
+      "css": ".ds-seg { display: inline-flex; border: 1px solid #9c9f98; border-radius: 2px; overflow: hidden; } .ds-seg button { min-height: 28px; min-width: 48px; padding: 0 12px; border: 0; background: #fff; color: #4f524c; font: 600 0.8125rem 'Source Sans 3', system-ui, sans-serif; cursor: pointer; } .ds-seg button + button { border-inline-start: 1px solid #9c9f98; } .ds-seg button[lang='ur'] { font-family: 'Noto Nastaliq Urdu', serif; font-size: 0.9375rem; line-height: 1.6; } .ds-seg button[aria-pressed='true'] { background: #161714; color: #fff; } .ds-seg button:hover:not([aria-pressed='true']) { background: #f7f7f4; color: #161714; } .ds-seg button:focus-visible { outline: 2px solid #161714; outline-offset: -2px; }"
+    },
+    {
+      "name": "Receipt",
+      "kind": "card",
+      "refersTo": "receipt",
+      "description": "Ruled calculation table; total sits under a 3px double ink rule.",
+      "html": "<table class=\"ds-receipt\"><tr><th>Paid price<span>12000 · 01_returns_policy.md §5.1</span></th><td>Rs. 12,000</td></tr><tr><th>Restocking fee, 15%<span>paid * 15 / 100</span></th><td>Rs. 1,800</td></tr><tr class=\"ds-total\"><th>Refund<span>paid - fee</span></th><td>Rs. 10,200</td></tr></table>",
+      "css": ".ds-receipt { width: 100%; max-width: 560px; border-collapse: collapse; border-top: 1px solid #161714; font: 400 1rem/1.5 'Source Sans 3', system-ui, sans-serif; font-variant-numeric: tabular-nums; color: #161714; } .ds-receipt th, .ds-receipt td { padding: 8px 0; border-top: 1px solid #dcddd8; text-align: start; vertical-align: top; font-weight: 400; } .ds-receipt td { text-align: end; white-space: nowrap; } .ds-receipt th span { display: block; font-size: 0.8125rem; color: #4f524c; } .ds-receipt .ds-total th, .ds-receipt .ds-total td { border-top: 3px double #161714; font-weight: 700; font-size: 1.1875rem; padding-top: 12px; } .ds-receipt .ds-total th span { font-weight: 400; }"
+    },
+    {
+      "name": "Top Bar",
+      "kind": "nav",
+      "refersTo": "top-bar",
+      "description": "Ink header with wordmark, promise, and ringed status dot.",
+      "html": "<header class=\"ds-top\"><b>NovaBot</b><span class=\"ds-promise\">Answers from NovaCart's policies, with sources</span><span class=\"ds-status\"><i></i>AI available</span></header>",
+      "css": ".ds-top { height: 64px; display: flex; align-items: center; gap: 16px; padding: 0 24px; background: #161714; color: #fff; font-family: 'Source Sans 3', system-ui, sans-serif; } .ds-top b { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.01em; } .ds-promise { color: #c9cbc4; font-size: 0.875rem; } .ds-status { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 0.8125rem; font-weight: 600; } .ds-status i { width: 10px; height: 10px; border-radius: 50%; background: #3ec27f; box-shadow: 0 0 0 2px #161714, 0 0 0 3px #3ec27f; }"
+    },
+    {
+      "name": "Source Quote Panel",
+      "kind": "card",
+      "refersTo": "source-panel",
+      "description": "Docked panel (desktop) or bottom sheet (phone) showing the exact policy quote.",
+      "html": "<aside class=\"ds-panel\"><div class=\"ds-panel-head\"><div><h2>File 01 · §3.1</h2><p>Returns policy</p></div><button aria-label=\"Close\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"><path d=\"M18 6 6 18M6 6l12 12\"/></svg></button></div><blockquote>Opened items that are not defective carry a 15% restocking fee.</blockquote><p class=\"ds-file\">01_returns_policy.md</p></aside>",
+      "css": ".ds-panel { width: 400px; max-width: 100%; padding: 24px; background: #fff; color: #161714; border-left: 1px solid #161714; display: flex; flex-direction: column; gap: 16px; font-family: 'Source Sans 3', system-ui, sans-serif; } .ds-panel-head { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid #161714; } .ds-panel-head h2 { margin: 0; font-size: 1.25rem; line-height: 1.3; font-weight: 700; } .ds-panel-head p { margin: 2px 0 0; color: #4f524c; } .ds-panel-head button { width: 40px; height: 40px; flex: none; border: 1px solid #9c9f98; border-radius: 2px; background: #fff; cursor: pointer; } .ds-panel-head button:hover { border-color: #161714; } .ds-panel blockquote { margin: 0; padding: 16px; background: #f7f7f4; border-radius: 2px; font-size: 1.125rem; line-height: 1.6; } .ds-file { margin: 0; font-size: 0.8125rem; color: #4f524c; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Wayfinding Terminal",
+    "overview": "NovaBot reads like airport signage applied to a support chat. Every bot reply opens with one sign band that tells the shopper what kind of answer is coming (answer, your turn, not covered, limited, error) before a word of it is read. Below the band the answer sits as plain, generous text on a white ground, followed by the evidence: source chips, a receipt-style calculation, and an expandable account of how the answer was worked out.\n\nThe world is flat, ruled, and high-contrast. Ink panels with white type, black pictogram squares, warm-tinted greys, 1px rules and 2px corners. Terminal yellow is reserved for \"your move\": the clarify band, the Send button, text selection, and the focus halo. There are no bubbles, no gradients and no drop shadows; depth comes from ink versus white and from rules.\n\nIt is bilingual by construction. English and Roman Urdu set in Source Sans 3; Urdu set in Noto Nastaliq Urdu with much larger line height, with file names, section refs, rupee amounts, dates and percentages isolated left-to-right inside Urdu runs.",
+    "keyCharacteristics": [
+      "One sign band per bot reply, colour-coded by answer kind, with a pictogram square at its leading edge.",
+      "Ink (#161714) and white carry the system; yellow means \"act now\" and nothing else.",
+      "2px corners everywhere, 1px rules, a 3px double rule for totals.",
+      "Sentence case throughout, tabular numerals on by default.",
+      "A single 760px reading column; sources open in a side panel (desktop) or bottom sheet (phone).",
+      "Motion is short and directional (120 to 240ms, one ease-out curve) and disappears under reduced motion."
+    ],
+    "rules": [
+      {
+        "name": "The Your-Move Rule",
+        "body": "Yellow appears only where the shopper must act or where focus is: clarify band, Send, selection, focus halo, progress. Never as decoration, never as a heading colour.",
+        "section": "colors"
+      },
+      {
+        "name": "The Band Tone Rule",
+        "body": "Each answer kind owns exactly one band treatment: ink fill (answer), yellow fill (your turn), pale fill (not covered), white with 2px ink inset (limited, loading), white with 2px brick inset (error). Do not invent a sixth tone without a sixth answer kind.",
+        "section": "colors"
+      },
+      {
+        "name": "The Nastaliq Room Rule",
+        "body": "Urdu text is set 1.15x the surrounding size with line height 2.1 to 2.2 (2 in the composer). Never let a component line height override it.",
+        "section": "typography"
+      },
+      {
+        "name": "The LTR Island Rule",
+        "body": "Inside Urdu, file names, § refs, Rs. amounts, ISO dates and percentages are wrapped as left-to-right isolates and set back in Source Sans 3 at 0.87em.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "No uppercase labels and no letterspaced small caps; the band carries the category.",
+        "section": "typography"
+      },
+      {
+        "name": "The Ruled Not Lifted Rule",
+        "body": "Separate things with a rule or a fill change, never a shadow. The only box-shadows are the focus halo and the 2px inset band outlines.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do open every bot reply with exactly one sign band in the tone that matches its answer kind.",
+      "Do reserve Terminal Yellow (#ffc915) for clarify, Send, selection, focus and progress.",
+      "Do use 2px corners, 1px rules and the 4px spacing scale on every new surface.",
+      "Do show sources as \"file §section · title\" chips that open the exact quote.",
+      "Do isolate file names, § refs, Rs. amounts, ISO dates and percentages as LTR runs inside Urdu, and give Urdu line height 2.1 or more.",
+      "Do keep all motion on the single ease-out curve (cubic-bezier(0.16, 1, 0.3, 1)) between 120 and 240ms, and make it instant under reduced motion.",
+      "Do use 2px-stroke line SVG icons in square pictogram tiles."
+    ],
+    "donts": [
+      "Don't use chat bubbles, grey AI message fills or avatars for bot replies.",
+      "Don't add drop shadows or gradients; separate with rules and fills.",
+      "Don't use yellow as decoration, a heading colour, or a second accent.",
+      "Don't set uppercase or letterspaced labels; sentence case only.",
+      "Don't introduce a display typeface; hierarchy is weight, size and the band.",
+      "Don't hard-code colours outside the :root tokens."
+    ]
+  }
+}

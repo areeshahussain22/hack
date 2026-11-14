@@ -1,19 +1,20 @@
+import localFont from 'next/font/local';
 import './globals.css';
-import { Noto_Nastaliq_Urdu } from 'next/font/google';
 
-// Nastaliq is the usual style for Urdu text. Exposed as a CSS variable, used only for Urdu bubbles.
-const urdu = Noto_Nastaliq_Urdu({ subsets: ['arabic'], weight: ['400', '600'], display: 'swap', variable: '--font-urdu' });
+// Fonts live in the repo (app/fonts, OFL licence) so builds never depend on reaching Google.
+const sans = localFont({ src: './fonts/SourceSans3-latin-var.woff2', weight: '400 700', variable: '--font-sans', display: 'swap' });
+const urdu = localFont({ src: './fonts/NotoNastaliqUrdu-arabic-var.woff2', weight: '400 700', variable: '--font-urdu', display: 'swap', preload: false });
 
 export const metadata = {
-  title: 'NovaCart Policy Assistant',
-  description: "Ask questions about NovaCart's store policies, with cited answers. English, اردو and Roman Urdu.",
+  title: 'NovaBot · NovaCart policy help',
+  description: "Answers from NovaCart's policies, with sources.",
 };
 
-export const viewport = { width: 'device-width', initialScale: 1 };
+export const viewport = { width: 'device-width', initialScale: 1, themeColor: '#161714' };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={urdu.variable}>
+    <html lang="en" className={`${sans.variable} ${urdu.variable}`}>
       <body>{children}</body>
     </html>
   );
