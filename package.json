@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "predev": "node scripts/build-index.mjs && node scripts/build-embeddings.mjs",
-    "prebuild": "node scripts/build-index.mjs && node scripts/build-embeddings.mjs",
+    "predev": "node scripts/build-index.mjs && node --env-file-if-exists=.env.local scripts/build-embeddings.mjs",
+    "prebuild": "node scripts/build-index.mjs && node --env-file-if-exists=.env.local scripts/build-embeddings.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "pretest": "node scripts/build-index.mjs && node scripts/build-embeddings.mjs",
+    "pretest": "node scripts/build-index.mjs && node --env-file-if-exists=.env.local scripts/build-embeddings.mjs",
     "test": "node tests/offline.test.mjs",
     "eval": "node tests/run-redteam.mjs"
   },

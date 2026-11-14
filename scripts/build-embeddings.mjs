@@ -3,11 +3,12 @@
 // and the app falls back to keyword search. It never breaks the build.
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const OUT = path.join(process.cwd(), 'lib', 'policy-embeddings.js');
 const MODEL = process.env.GEMINI_EMBED_MODEL || 'gemini-embedding-001';
 const DIMS = 256;      // small vectors: fast and light, good enough for 270 short items
-const BATCH = 100;     // max texts per batch request
+const BATCH = 90;      // free tier allows 100 texts per minute, so stay under it per batch
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function write(data) {
@@ -22,7 +23,7 @@ function normalize(v) {
 }
 
 async function embedBatch(key, texts) {
-  for (let attempt = 0; attempt < 5; attempt++) {
+  for (let attempt = 0; attempt < 6; attempt++) {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:batchEmbedContents`, {
       method: 'POST',
       headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
@@ -34,7 +35,9 @@ async function embedBatch(key, texts) {
       }),
     });
     if (res.ok) return (await res.json()).embeddings.map(e => normalize(e.values));
-    if (res.status === 429 || res.status >= 500) { await sleep(2000 * 2 ** attempt); continue; }
+    // 429 = per-minute quota: wait for the minute window to reset (20s, 40s, 60s...)
+    if (res.status === 429) { console.log(`[embeddings] rate limited, waiting ${20 * (attempt + 1)}s`); await sleep(20000 * (attempt + 1)); continue; }
+    if (res.status >= 500) { await sleep(2000 * 2 ** attempt); continue; }
     throw new Error(`HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
   }
   throw new Error('too many retries');
@@ -44,7 +47,7 @@ const key = process.env.GEMINI_API_KEY;
 if (!key) empty('GEMINI_API_KEY not set');
 else {
   try {
-    const { default: INDEX } = await import(path.join(process.cwd(), 'lib', 'policy-index.js'));
+    const { default: INDEX } = await import(pathToFileURL(path.join(process.cwd(), 'lib', 'policy-index.js')).href); // file:// URL so it works on Windows too
     const items = INDEX.items;
     const vectors = {};
     for (let i = 0; i < items.length; i += BATCH) {
