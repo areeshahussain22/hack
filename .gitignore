@@ -11,3 +11,5 @@ out
 # system
 .DS_Store
 .vercel
+
+lib/policy-index.js
