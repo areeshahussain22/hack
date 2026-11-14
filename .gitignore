@@ -12,4 +12,5 @@ out
 .DS_Store
 .vercel
 
+# generated on every build
 lib/policy-index.js
