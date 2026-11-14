@@ -6,6 +6,8 @@ import { splitShare, runCalculation, roundHalfUp } from '../lib/calc.js';
 import { resolvePolicies, classifyRegion } from '../lib/resolver.js';
 import { retrieve } from '../lib/retrieve.js';
 import INDEX from '../lib/policy-index.js';
+import { regexExtract, sanitize } from '../lib/extract.js';
+import { verifyAnswer, quoteSupported } from '../lib/verify.js';
 
 let passed = 0;
 const t = (name, fn) => { fn(); passed++; console.log('✅', name); };
@@ -48,5 +50,112 @@ t('retrieval finds return window + discount split', () => {
   const { items } = retrieve('return opened headphones I used WELCOME10', r.allowed, ['returns', 'refund_amount', 'promo']);
   const ids = items.map(i => i.id);
   assert.ok(ids.includes('01:2.1') && ids.includes('12:6.2') && !ids.some(id => id.startsWith('02:')));
+});
+// Extractor: the AI must show the exact words it read each date from (no list of date formats)
+const check = (text, ai) => sanitize(ai, regexExtract(text), text);
+t('extract: date kept when evidence is in the text and agrees', () => {
+  const text = 'I got my order on 25th June 2026, can I return it?';
+  assert.equal(check(text, { delivery_date: '2026-06-25', evidence: { delivery_date: 'on 25th June 2026' } }).delivery_date, '2026-06-25');
+  assert.equal(check('arrived 25/06/2026', { delivery_date: '2026-06-25', evidence: { delivery_date: '25/06/2026' } }).delivery_date, '2026-06-25');
+});
+t('extract: made-up date removed (evidence not in text)', () => {
+  const text = 'delivered on 2026-06-25, paid Rs. 9,000';
+  const f = check(text, { contact_date: '2026-09-09', evidence: { contact_date: 'today is 9 September' } });
+  assert.equal(f.contact_date, null);
+});
+t('extract: date removed when evidence disagrees (wrong day or year)', () => {
+  const text = 'I got it on 25 June 2025';
+  assert.equal(check(text, { delivery_date: '2026-06-25', evidence: { delivery_date: '25 June 2025' } }).delivery_date, null);
+  assert.equal(check(text, { delivery_date: '2025-06-24', evidence: { delivery_date: '25 June 2025' } }).delivery_date, null);
+});
+t('extract: AI may not calculate relative dates itself', () => {
+  assert.equal(check('it came yesterday', { delivery_date: '2026-06-24', evidence: { delivery_date: 'yesterday' } }).delivery_date, null);
+});
+t('extract: relative dates are counted by code from the contact date', () => {
+  const text = 'today is 2026-07-01 (Wednesday). It arrived yesterday, I ordered it last Tuesday';
+  const f = check(text, {
+    contact_date: '2026-07-01',
+    relative_dates: { delivery_date: { evidence: 'arrived yesterday', days_ago: 1 }, order_date: { evidence: 'last Tuesday', weekday: 'tuesday' } },
+  });
+  assert.equal(f.delivery_date, '2026-06-30');
+  assert.equal(f.order_date, '2026-06-30'); // most recent Tuesday before Wed 2026-07-01
+  assert.equal(f.date_notes.length, 2);
+  assert.equal(check('today is 2026-07-01, it came 3 days ago', { contact_date: '2026-07-01', relative_dates: { delivery_date: { evidence: '3 days ago', days_ago: 3 } } }).delivery_date, '2026-06-28');
+  assert.equal(check('today is 2026-07-01, it came 2 weeks ago', { contact_date: '2026-07-01', relative_dates: { delivery_date: { evidence: '2 weeks ago', days_ago: 14 } } }).delivery_date, '2026-06-17');
+});
+t('extract: relative dates are checked against the text', () => {
+  const base = 'today is 2026-07-01, it came 3 days ago';
+  const rel = r => check(base, { contact_date: '2026-07-01', relative_dates: { delivery_date: r } }).delivery_date;
+  assert.equal(rel({ evidence: '3 days ago', days_ago: 5 }), null);          // number disagrees
+  assert.equal(rel({ evidence: '5 days ago', days_ago: 5 }), null);          // evidence not in text
+  assert.equal(rel({ evidence: '3 days ago', weekday: 'friday' }), null);    // weekday not in evidence
+  // Weekday in the customer's words wins over a wrong day count from the AI
+  assert.equal(check('today is 2026-07-01, got it last Tuesday', { contact_date: '2026-07-01', relative_dates: { delivery_date: { evidence: 'last Tuesday', days_ago: 2 } } }).delivery_date, '2026-06-30');
+  // Same phrase for order and delivery: used for delivery only
+  const same = check('today is 2026-07-01, it came 3 days ago', { contact_date: '2026-07-01', relative_dates: {
+    order_date: { evidence: 'it came 3 days ago', days_ago: 3 }, delivery_date: { evidence: 'it came 3 days ago', days_ago: 3 } } });
+  assert.equal(same.order_date, null); assert.equal(same.delivery_date, '2026-06-28');
+  // AI counted "yesterday" itself: code recounts it (and rejects a wrong count when the words have a number)
+  assert.equal(check('today is 2026-07-01, it arrived yesterday', { contact_date: '2026-07-01', delivery_date: '2026-06-30', evidence: { delivery_date: 'arrived yesterday' } }).delivery_date, '2026-06-30');
+  assert.equal(check('today is 2026-07-01, it came 3 days ago', { contact_date: '2026-07-01', delivery_date: '2026-06-27', evidence: { delivery_date: '3 days ago' } }).delivery_date, null);
+  // No contact date: nothing is counted, the bot asks instead
+  const f = check('it came yesterday', { relative_dates: { delivery_date: { evidence: 'came yesterday', days_ago: 1 } } });
+  assert.equal(f.delivery_date, null);
+  assert.ok(f.date_notes[0].includes('needs the contact date'));
+});
+t('extract: made-up promo code and price removed', () => {
+  const f = check('used WELCOME10 on headphones for Rs. 5,000', {
+    promo_codes: ['WELCOME10', 'STYLE15'], items: [{ name: 'headphones', price: 5000 }, { name: 'case', price: 9999 }],
+  });
+  assert.deepEqual(f.promo_codes, ['WELCOME10']);
+  assert.deepEqual(f.items.map(i => i.price), [5000, null]);
+});
+t('extract: regex backup reads order date past a price, not the delivery date', () => {
+  assert.equal(regexExtract('I ordered headphones for Rs. 5,000 on 2026-06-20').order_date, '2026-06-20');
+  const f = regexExtract('I ordered headphones, delivered on 2026-06-25');
+  assert.equal(f.order_date, null); assert.equal(f.delivery_date, '2026-06-25'); assert.equal(f.contact_date, null);
+});
+t('extract: "how much is shipping" is not a refund question', () => {
+  assert.ok(!regexExtract('how much is shipping to lahore').topics.includes('refund_amount'));
+  assert.ok(regexExtract('how much will I get back').topics.includes('refund_amount'));
+});
+// Verifier: quotes must be copied word for word; numbers must come from the cited items
+const ITEMS = ['01:2.1', '01:3.1', '03:3.1', '12:6.4'].map(id => INDEX.items.find(i => i.id === id));
+const part = (answer, citations) => ({ parts: [{ question: 'q', status: 'covered', answer, citations }] });
+const Q31 = 'a restocking fee of 15% of the paid price applies';
+t('verify: exact quote passes, punctuation and case ignored', () => {
+  assert.ok(quoteSupported(Q31, ITEMS[1].text));
+  assert.ok(quoteSupported('A Refund goes back to the original payment method', ITEMS[2].text));
+  assert.ok(quoteSupported('If an electronics item has been opened ... a restocking fee of 15%', ITEMS[1].text));
+  assert.ok(quoteSupported('Clothing | 30 days', ITEMS[0].text));   // a whole table row may be short
+  assert.ok(!quoteSupported('Clothing | 7 days', ITEMS[0].text));   // but not a mixed-up row
+  assert.ok(!quoteSupported('7 days', ITEMS[0].text));              // and not a loose fragment
+});
+t('verify: reworded, reordered, too short or wrong-item quotes fail', () => {
+  assert.ok(!quoteSupported('a restocking fee of 15% applies to the paid price', ITEMS[1].text)); // same words, different order
+  assert.ok(!quoteSupported('restocking fee of 20% of the paid price', ITEMS[1].text));            // one word changed
+  assert.ok(!quoteSupported('15% of the', ITEMS[1].text));                                         // too short to prove anything
+  assert.ok(!quoteSupported(Q31, ITEMS[2].text));                                                  // right words, wrong item
+  assert.ok(!quoteSupported('a restocking fee of 15% ... the original packaging', ITEMS[1].text)); // pieces out of order
+});
+t('verify: fake quote drops the part to not covered', () => {
+  const v = verifyAnswer(part('Everyone gets a gift card.', [{ id: '01:3.1', quote: 'free gift cards for everyone' }]), ITEMS);
+  assert.equal(v.parts[0].status, 'not_covered'); assert.ok(v.issues.length >= 2);
+});
+t('verify: numbers must come from the cited item, including small ones', () => {
+  const ok = verifyAnswer(part('Opened electronics have a 15% fee. Your refund is {{refund}}.', [{ id: '01:3.1', quote: Q31 }]), ITEMS);
+  assert.deepEqual(ok.issues, []);
+  // "8,300" made up
+  assert.ok(verifyAnswer(part('Your refund is about 8,300.', [{ id: '01:3.1', quote: Q31 }]), ITEMS).issues.some(i => i.includes('8300')));
+  // single digit: "7 days" is in 01:2.1, but this part only cites 01:3.1, so it must cite 01:2.1 too
+  assert.ok(verifyAnswer(part('You have 7 days to return it.', [{ id: '01:3.1', quote: Q31 }]), ITEMS).issues.some(i => i.includes('number 7')));
+  assert.deepEqual(verifyAnswer(part('You have 7 days to return it.', [{ id: '01:2.1', quote: 'Return windows count from the delivery date' }]), ITEMS).issues, []);
+  // wrong small number: "8 days" is nowhere
+  assert.ok(verifyAnswer(part('You have 8 days.', [{ id: '01:2.1', quote: 'Return windows count from the delivery date' }]), ITEMS).issues.some(i => i.includes('number 8')));
+});
+t('verify: customer and date-fact numbers allowed, citation labels ignored', () => {
+  const v = verifyAnswer(part('Delivered 2026-07-07, it is day 3 of the window (01_returns_policy.md §2.1, 01:2.1).',
+    [{ id: '01:2.1', quote: 'Return windows count from the delivery date' }]), ITEMS, 'delivery date: 2026-07-07. Days from delivery date to contact date: 3.');
+  assert.deepEqual(v.issues, []);
 });
 console.log(`\n${passed} tests passed`);
