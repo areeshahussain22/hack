@@ -10,8 +10,7 @@
     "build": "next build",
     "start": "next start",
     "pretest": "node scripts/build-index.mjs && node --env-file-if-exists=.env.local scripts/build-embeddings.mjs",
-    "test": "node tests/offline.test.mjs",
-    "eval": "node tests/run-redteam.mjs"
+    "test": "node tests/offline.test.mjs"
   },
   "dependencies": {
     "@google/genai": "^3.3.0",
