@@ -101,17 +101,53 @@ body {
   .extra .num { text-align: left; font-weight: 600; }
 }
 
+/* Urdu: right-to-left Nastaliq. Amounts, dates, codes and citations stay left-to-right inside it. */
+.urdu { font-family: var(--font-urdu), 'Noto Nastaliq Urdu', serif; line-height: 2.1; }
+.urdu-inline { font-family: var(--font-urdu), serif; white-space: nowrap; }
+.ltr, bdi.ltr { unicode-bidi: isolate; direction: ltr; }
+.urdu .latin { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+.urdu .cites, .urdu .note .ltr, .urdu .latin { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; line-height: 1.55; }
+.msg.bot .urdu { border-bottom-left-radius: 14px; border-bottom-right-radius: 4px; }
+.example.urdu { text-align: right; }
+
+.listen {
+  align-self: flex-start; margin-top: 6px; min-height: 32px; padding: 2px 12px;
+  border: 1px solid var(--border); border-radius: 999px; background: var(--panel);
+  color: var(--muted); font: inherit; font-size: 0.85rem; cursor: pointer;
+}
+.listen.urdu { line-height: 1.6; }
+.listen[aria-pressed='true'] { color: var(--accent); border-color: var(--accent); }
+
 .composer {
-  position: sticky; bottom: 0; display: flex; gap: 8px;
+  position: sticky; bottom: 0; display: flex; flex-wrap: wrap; gap: 8px;
   padding: 12px 0 16px; background: var(--bg); border-top: 1px solid var(--border);
 }
 .composer textarea {
-  flex: 1; resize: none; padding: 10px 12px; border-radius: 10px;
+  flex: 1; min-width: 0; resize: none; padding: 10px 12px; border-radius: 10px;
   border: 1px solid var(--border); background: var(--panel); color: var(--text); font: inherit;
 }
+.composer textarea.urdu { line-height: 2.1; }
 .composer textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.controls { display: flex; gap: 6px; align-items: stretch; }
 .composer button {
-  padding: 0 20px; border: 0; border-radius: 10px; background: var(--accent);
+  min-height: 38px; padding: 0 20px; border: 0; border-radius: 10px; background: var(--accent);
   color: var(--accent-text); font: inherit; font-weight: 600; cursor: pointer;
 }
 .composer button:disabled { opacity: 0.5; cursor: not-allowed; }
+.composer .mic, .composer .mic-lang {
+  padding: 0 10px; background: var(--panel); color: var(--text); border: 1px solid var(--border); font-weight: 400;
+}
+.composer .mic { min-width: 42px; font-size: 1.1rem; }
+.composer .mic-lang { min-width: 46px; font-size: 0.8rem; color: var(--muted); }
+.composer .mic.on { background: #d92d20; border-color: #d92d20; color: #fff; animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(217, 45, 32, 0.5); } 50% { box-shadow: 0 0 0 6px rgba(217, 45, 32, 0); } }
+@media (prefers-reduced-motion: reduce) { .composer .mic.on { animation: none; } }
+.mic-hint { flex-basis: 100%; font-size: 0.82rem; color: var(--muted); }
+.mic-hint.warn { color: var(--error); }
+
+/* Phones: textarea on its own row, mic + language tag + Ask on the second row */
+@media (max-width: 600px) {
+  .composer textarea { flex-basis: 100%; }
+  .controls { flex-basis: 100%; }
+  .controls .ask { flex: 1; }
+}
