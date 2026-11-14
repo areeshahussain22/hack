@@ -1,0 +1,23 @@
+{
+  "name": "novacart-policy-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "predev": "node scripts/build-index.mjs",
+    "prebuild": "node scripts/build-index.mjs",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "pretest": "node scripts/build-index.mjs",
+    "test": "node tests/offline.test.mjs",
+    "eval": "node tests/run-redteam.mjs"
+  },
+  "dependencies": {
+    "@google/genai": "^3.3.0",
+    "mathjs": "^14.9.1",
+    "next": "^15.5.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}
