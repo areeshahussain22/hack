@@ -37,7 +37,9 @@ function parseFile(file, raw, dropped) {
   const push = () => {
     if (cur && cur.lines.join('').trim()) {
       const text = cur.lines.join('\n').trim();
-      items.push({ id: `${fileNo}:${cur.item}`, fileNo, file, item: cur.item, heading: cur.heading, text, refs: parseRefs(text) });
+      // The policy files label worked examples "(illustration only)": their numbers show a method, not a rule.
+      const example = /illustration only/i.test(`${cur.heading} ${text}`);
+      items.push({ id: `${fileNo}:${cur.item}`, fileNo, file, item: cur.item, heading: cur.heading, text, refs: parseRefs(text), example });
     }
     cur = null;
   };

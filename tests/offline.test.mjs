@@ -7,7 +7,7 @@ import { resolvePolicies, classifyRegion } from '../lib/resolver.js';
 import { retrieve } from '../lib/retrieve.js';
 import INDEX from '../lib/policy-index.js';
 import { regexExtract, sanitize } from '../lib/extract.js';
-import { verifyAnswer, quoteSupported } from '../lib/verify.js';
+import { verifyAnswer, quoteSupported, dropUnverifiedSentences } from '../lib/verify.js';
 
 let passed = 0;
 const t = (name, fn) => { fn(); passed++; console.log('✅', name); };
@@ -19,6 +19,15 @@ t('days from delivery', () => assert.equal(daysBetween('2026-03-01', '2026-03-08
 t('discount split matches 12 §6.4 example', () => assert.deepEqual([1, 2, 3].map(i => splitShare(500, i, 5000, 5000, 5500)), [161, 161, 178]));
 t('warranty refund matches 08 §6.1 example', () => assert.equal(runCalculation([{ name: 'r', expression: '24000 * (12 - 3) / 12' }]).values.r, 18000));
 t('round half up', () => { assert.equal(roundHalfUp(2.5), 3); assert.equal(roundHalfUp(499.5), 500); assert.equal(roundHalfUp(0.1 + 0.2), 0); });
+t('calculator keeps a rate step exact (0.15 is not rounded to 0)', () => {
+  const { values } = runCalculation([
+    { name: 'rate', expression: '0.15' },
+    { name: 'fee', expression: '5000 * rate' },
+    { name: 'refund', expression: '5000 - fee - 200' },
+  ]);
+  assert.equal(values.fee, 750); assert.equal(values.refund, 4050);
+  assert.throws(() => runCalculation([{ name: 'r', expression: '15 / 100' }]), /rounds to 0/);
+});
 t('calculator blocks unsafe input', () => {
   for (const bad of ['import(1)', 'abc + 1', '1/0', 'x; 2', 'evaluate("1")']) assert.throws(() => runCalculation([{ name: 'x', expression: bad }]));
 });
@@ -152,6 +161,19 @@ t('verify: numbers must come from the cited item, including small ones', () => {
   assert.deepEqual(verifyAnswer(part('You have 7 days to return it.', [{ id: '01:2.1', quote: 'Return windows count from the delivery date' }]), ITEMS).issues, []);
   // wrong small number: "8 days" is nowhere
   assert.ok(verifyAnswer(part('You have 8 days.', [{ id: '01:2.1', quote: 'Return windows count from the delivery date' }]), ITEMS).issues.some(i => i.includes('number 8')));
+});
+t('verify: numbers copied from a worked example are not trusted', () => {
+  const ex = INDEX.items.find(i => i.example && i.text.includes('1,840'));
+  assert.ok(ex, 'worked example items are flagged by the indexer');
+  const v = verifyAnswer(part('You will get back Rs. 1,840.', [{ id: ex.id, quote: ex.text.split(/\s+/).slice(0, 8).join(' ') }]), [...ITEMS, ex]);
+  assert.ok(v.issues.some(i => i.includes('1840')));
+});
+t('verify: calculated amounts must be placeholders, and unverified sentences are removed', () => {
+  const cite = [{ id: '01:3.1', quote: Q31 }];
+  assert.deepEqual(verifyAnswer(part('You get back Rs. {{refund}}.', cite), ITEMS).issues, []);
+  const v = verifyAnswer(part('Opened items have a 15% fee. You get back Rs. 2,160. Thanks!', cite), ITEMS);
+  assert.deepEqual(v.parts[0].unverified, ['2160']);
+  assert.equal(dropUnverifiedSentences(v.parts[0].answer, v.parts[0].unverified).answer, 'Opened items have a 15% fee. Thanks!');
 });
 t('verify: customer and date-fact numbers allowed, citation labels ignored', () => {
   const v = verifyAnswer(part('Delivered 2026-07-07, it is day 3 of the window (01_returns_policy.md §2.1, 01:2.1).',
